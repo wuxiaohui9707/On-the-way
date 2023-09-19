@@ -1,7 +1,7 @@
 from torch.utils.data import Dataset
 import torch
 
-
+###
 class CustomDataset(Dataset):
     def __init__(self, data, transform=None):
         self.data = data
