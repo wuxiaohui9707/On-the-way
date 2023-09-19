@@ -1,4 +1,4 @@
-from Custom_Dataset import CustomDataset
+from custom_dataset import CustomDataset
 from torchvision import transforms
 from torch.utils.data import DataLoader
 
