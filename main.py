@@ -1,5 +1,5 @@
 import pytorch_lightning as pl
-from model_resnet50 import ImageRegression_Resnet50
+from models import ImageRegression_Resnet50
 from data_utils import get_transform, get_loaders
 from train_utils import get_checkpoint_callback, get_logger
 from datasets import load_dataset
