@@ -1,7 +1,7 @@
 import os
 
 loss = []
-
+~~~~
 for n_res in [18, 34, 50, 101, 152]:
     # load dataset
     train, val, test = get_loaders()
