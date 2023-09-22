@@ -1,5 +1,5 @@
 import pytorch_lightning as pl
-from model import ImageRegression
+from model_resnet50 import ImageRegression_Resnet50
 from data_utils import get_transform, get_loaders
 from train_utils import get_checkpoint_callback, get_logger
 from datasets import load_dataset
@@ -9,17 +9,17 @@ transform = get_transform()
 raw_datasets = load_dataset("Niche-Squad/mock-dots","regression-one-class", download_mode="force_redownload")
 train_loader, val_loader, test_loader = get_loaders(raw_datasets,transform,32)
 
-model = ImageRegression()
+model = ImageRegression_Resnet50()
 checkpoint_callback = get_checkpoint_callback()
 logger = get_logger()
 
 trainer = pl.Trainer(callbacks=[checkpoint_callback], max_epochs=100, logger=logger)
 trainer.fit(model, train_loader, val_loader)
 
-save_path_validation = 'D:/Files/Plot/validation.png'
+save_path_validation = 'D:/Files/Plot/Resnet50_validation.png'
 plot_truth_vs_prediction(model, val_loader,save_path_validation)
 
 best_model_path = trainer.checkpoint_callback.best_model_path
 trainer.test(dataloaders=test_loader,ckpt_path=best_model_path) 
-save_path_test = 'D:/Files/Plot/test.png'
+save_path_test = 'D:/Files/Plot/Resnet50_test.png'
 plot_truth_vs_prediction(model, test_loader,save_path_test)

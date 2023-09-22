@@ -3,11 +3,11 @@ import pytorch_lightning as pl
 import torch.nn as nn
 import torch.nn.functional as F
 
-
-class ImageRegression(pl.LightningModule):
+###Resnet101###
+class ImageRegression_Resnet101(pl.LightningModule):
     def __init__(self):
-        super(ImageRegression, self).__init__()
-        self.model = torch.hub.load('pytorch/vision:v0.10.0', 'resnet50', pretrained=True)
+        super(ImageRegression_Resnet101, self).__init__()
+        self.model = torch.hub.load('pytorch/vision:v0.10.0', 'resnet101', pretrained=True)
         num_ftrs = self.model.fc.in_features
         self.model.fc = nn.Linear(num_ftrs, 1)
 
@@ -47,9 +47,6 @@ class ImageRegression(pl.LightningModule):
         accuracy = correct / total
         self.log('test_acc', accuracy, on_epoch=True, prog_bar=True)
         return {"test_loss": loss, "test_acc": accuracy}
-
-    def predict_step(self, batch, batch_idx: int):
-        """put post-processing steps here"""
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=0.001)
