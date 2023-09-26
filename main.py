@@ -1,25 +1,38 @@
 import pytorch_lightning as pl
-from models import ImageRegression_Resnet50
-from data_utils import get_transform, get_loaders
-from train_utils import get_checkpoint_callback, get_logger
+import torch.nn.functional as F
+import os
+import matplotlib.pyplot as plt
+import torch
+from utils import data, get_model, plot, train
 from datasets import load_dataset
-from plot_utils import plot_truth_vs_prediction
+from pytorch_lightning.callbacks import ModelCheckpoint
 
-transform = get_transform()
 raw_datasets = load_dataset("Niche-Squad/mock-dots","regression-one-class", download_mode="force_redownload")
-train_loader, val_loader, test_loader = get_loaders(raw_datasets,transform,32)
+loss = []
+for n_res in [18, 34, 50, 101, 152]:
+    # load dataset
+    transform = data.get_transform()
+    train_loader, val_loader, test_loader = data.get_loaders(raw_datasets,transform,32)
+    # configure model
+    model_name = "ImageRegression_Resnet{}".format(n_res)
+    model = get_model.get_model(model_name)
+    # config trainer and fit
+    
+    trainer = pl.Trainer(callbacks=[train.get_checkpoint_callback()], max_epochs=10, logger=train.get_logger())
+    trainer.fit(model, train_loader, val_loader)
 
-model = ImageRegression_Resnet50()
-checkpoint_callback = get_checkpoint_callback()
-logger = get_logger()
+    # vis: val
+    save_path = "E:/Files/Plot"
+    plot.truth_vs_prediction(model,val_loader,os.path.join(save_path, model_name + "val.png"),)
 
-trainer = pl.Trainer(callbacks=[checkpoint_callback], max_epochs=100, logger=logger)
-trainer.fit(model, train_loader, val_loader)
+    # vis: test
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    best_model_path = trainer.checkpoint_callback.best_model_path
+    best_model = model.load_from_checkpoint(best_model_path)
+    test_result = trainer.test(dataloaders=test_loader,ckpt_path=best_model_path) 
+    print(test_result)
+    plot.truth_vs_prediction(model,test_loader,os.path.join(save_path, model_name + "test.png"))
+    loss.append(test_result[0]["test_loss_epoch"])
 
-save_path_validation = 'D:/Files/Plot/Resnet50_validation.png'
-plot_truth_vs_prediction(model, val_loader,save_path_validation)
-
-best_model_path = trainer.checkpoint_callback.best_model_path
-trainer.test(dataloaders=test_loader,ckpt_path=best_model_path) 
-save_path_test = 'D:/Files/Plot/Resnet50_test.png'
-plot_truth_vs_prediction(model, test_loader,save_path_test)
+# plot loss
+plt.plot(loss)  # how the loss changes over different models
